@@ -1,0 +1,8 @@
+---
+# vars file for setup-Archlinux
+pacman_packages:
+  - yadm
+  - timeshift
+  - neovim
+  - kitty
+  - jq

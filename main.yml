@@ -1,0 +1,14 @@
+---
+- name: Provision Linux Workstation
+  gather_facts: yes
+  hosts: localhost
+  become: yes
+
+  collections:
+    - "community.general"
+
+  tasks:
+    - name: Include OS specific role
+      include_role: 
+        name: setup-{{ ansible_os_family }}
+

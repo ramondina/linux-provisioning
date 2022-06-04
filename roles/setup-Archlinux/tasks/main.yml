@@ -1,0 +1,15 @@
+---
+# tasks file for setup-Archlinux
+- name: Sync pacman db
+  pacman:
+    update_cache: yes
+
+- name: Install pacman packages
+  pacman:
+    name: "{{ pacman_packages }}"
+    state: present
+
+- name: Install starship
+  include_role: 
+    name: install-starship
+

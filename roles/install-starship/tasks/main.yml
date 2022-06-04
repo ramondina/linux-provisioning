@@ -1,0 +1,51 @@
+---
+- name: Get latest nerd-font version
+  uri:
+    url: "https://github.com/ryanoasis/nerd-fonts/releases/latest"
+    headers:
+      Accept: "application/json"
+  register: latest
+
+- name: Check if font exists
+  stat:
+    path: /usr/share/fonts/TTF/hack-nerd-font-complete-{{ latest.json.tag_name }}.ttf
+  register: font
+
+- name: Install latest nerd-fonts
+  when: not font.stat.exists
+  block:
+    - name: Remove old font version
+      shell: rm -rf /usr/share/fonts/TTF/hack-nerd-font-complete*.ttf
+
+    - name: Download nerd-fonts
+      unarchive:
+        remote_src: yes
+        src: "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ latest.json.tag_name }}/Hack.zip"
+        dest: /usr/share/fonts/TTF/
+        include: 'Hack Regular Nerd Font Complete.ttf'
+
+    - name: Rename file
+      command: mv /usr/share/fonts/TTF/'Hack Regular Nerd Font Complete.ttf' /usr/share/fonts/TTF/hack-nerd-font-complete-{{ latest.json.tag_name }}.ttf
+
+    - name: Update font cache
+      command: sudo fc-cache -fv
+
+- name: Get latest starship version
+  uri:
+    url: "https://github.com/starship/starship/releases/latest"
+    headers:
+      Accept: "application/json"
+  register: latest
+
+- name: Check installed starship version
+  command: starship -V
+  register: current
+  changed_when: false
+  ignore_errors: true
+
+- name: Install or update starship
+  when: latest.json.tag_name != current.stdout|regex_replace('^starship ', 'v')
+  unarchive:
+    remote_src: yes
+    src: "https://github.com/starship/starship/releases/download/{{ latest.json.tag_name }}/starship-x86_64-unknown-linux-gnu.tar.gz"
+    dest: /usr/local/bin/
